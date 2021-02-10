@@ -15,7 +15,7 @@ type Battery struct {
 	floorRequestButtonsList []FloorRequestButton
 }
 
-func (b *Battery) batteryInit(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) *Battery {
+func (b Battery) batteryInit(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) *Battery {
 	b.ID = id
 	b.status = status
 	b.amountOfFloors = amountOfFloors
@@ -27,6 +27,15 @@ func (b *Battery) batteryInit(id int, status string, amountOfFloors int, amountO
 	if amountOfBasements > 0 {
 		b.createBasmentColumn(b.amountOfBasements, amountOfElevatorPerColumn)
 	}
+
+	// for debug
+	for column := range b.columnsList {
+		fmt.Println("Column: ", column)
+		for _, floor := range b.columnsList[0].servedFloors {
+			fmt.Println("	Floor: ", floor)
+		}
+	}
+
 	return &Battery{
 		ID:                      id,
 		status:                  status,
@@ -47,8 +56,7 @@ func (b *Battery) createBasmentColumn(amountOfBasements int, amountOfElevatorPer
 		servedFloors = append(servedFloors, floor)
 		floor--
 	}
-	column := columnInit(columnID, "online", amountOfBasements, amountOfElevatorPerColumn, true, servedFloors)
-	b.columnsList = append(b.columnsList, *column)
+	b.columnsList = append(b.columnsList, Column{columnID, "online", amountOfBasements, amountOfElevatorPerColumn, true, []Elevator{}, []CallButton{}, servedFloors})
 	columnID++
 
 }
@@ -65,7 +73,20 @@ type Column struct {
 	servedFloors      []int
 }
 
-func columnInit(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) *Column {
+func (c Column) columnInit(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) *Column {
+	c.ID = id
+	c.status = status
+	c.amountOfFloors = amountOfFloors
+	c.amountOfElevators = amountOfElevators
+	c.isBasement = isBasement
+	c.servedFloors = servedFloors
+	c.elevatorsList = []Elevator{}
+	c.callButtonsList = []CallButton{}
+
+	for floor := range c.servedFloors {
+		fmt.Println("Floor: ", floor)
+	}
+
 	return &Column{
 		ID:                id,
 		status:            status,
@@ -74,7 +95,7 @@ func columnInit(id int, status string, amountOfFloors int, amountOfElevators int
 		isBasement:        isBasement,
 		elevatorsList:     []Elevator{},
 		callButtonsList:   []CallButton{},
-		servedFloors:      servedFloors,
+		servedFloors:      c.servedFloors,
 	}
 }
 
@@ -112,10 +133,14 @@ type Door struct {
 
 func main() {
 	fmt.Println("-------------------------------// TESTING //----------------------------------")
-	testBat := Battery{1, "online", 66, 4, 6, []Column{}, []FloorRequestButton{}}
-	goodBat := testBat.batteryInit(1, "online", 60, 4, 6, 5)
-	// testCol := Column{1, "online", 66, 5, true}
+	// testBat := Battery{1, "online", 66, 4, 6, []Column{}, []FloorRequestButton{}}
+	// goodBat := testBat.batteryInit(1, "online", 60, 4, 6, 5)
+	// // testCol := Column{1, "online", 66, 5, true}
 
-	fmt.Println("Test status: ", goodBat.status)
+	// fmt.Println("Test status: ", goodBat.status)
+	// fmt.Println("Test id: ", goodBat.ID)
+	// fmt.Println("Test column list: ", goodBat.columnsList)
 	// fmt.Println("Test column: ", testBat.columnsList[0])
+	Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.batteryInit(1, "online", 60, 4, 6, 5)
+
 }
