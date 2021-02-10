@@ -15,7 +15,8 @@ type Battery struct {
 	floorRequestButtonsList []FloorRequestButton
 }
 
-func (b Battery) batteryInit(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) *Battery {
+func batteryInit(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) Battery {
+	b := Battery{}
 	b.ID = id
 	b.status = status
 	b.amountOfFloors = amountOfFloors
@@ -36,15 +37,7 @@ func (b Battery) batteryInit(id int, status string, amountOfFloors int, amountOf
 		}
 	}
 
-	return &Battery{
-		ID:                      id,
-		status:                  status,
-		amountOfFloors:          amountOfFloors,
-		amountOfColumns:         amountOfColumns,
-		amountOfBasements:       amountOfBasements,
-		columnsList:             b.columnsList,
-		floorRequestButtonsList: []FloorRequestButton{},
-	}
+	return b
 }
 
 func (b *Battery) createBasmentColumn(amountOfBasements int, amountOfElevatorPerColumn int) {
@@ -141,6 +134,7 @@ func main() {
 	// fmt.Println("Test id: ", goodBat.ID)
 	// fmt.Println("Test column list: ", goodBat.columnsList)
 	// fmt.Println("Test column: ", testBat.columnsList[0])
-	Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.batteryInit(1, "online", 60, 4, 6, 5)
-
+	// Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.batteryInit(1, "online", 60, 4, 6, 5)
+	testBat := batteryInit(1, "online", 60, 4, 6, 5)
+	fmt.Println(testBat)
 }
