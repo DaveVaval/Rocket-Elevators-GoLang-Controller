@@ -98,6 +98,32 @@ func (b *Battery) createBasementFloorRequestButtons(amountOfBasements int) {
 	}
 }
 
+func (b *Battery) findBestColumn(requestedFloor int) Column { // will have to make sure this works
+	col := Column{}
+	for _, c := range b.columnsList {
+		found := find(requestedFloor, c.servedFloors)
+		if found == true {
+			col = c
+		}
+
+	}
+	return col
+}
+
+func find(a int, list []int) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *Battery) assignElevator(requestedFloor int, direction string) { // need to come back to this 
+	column := b.findBestColumn(requestedFloor)
+	elevator := 
+}
+
 // Column struct
 type Column struct {
 	ID                int
