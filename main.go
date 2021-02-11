@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"sort"
 )
 
 var floorRequestButtonID int = 1
@@ -207,7 +208,16 @@ func RemoveIndex(s []int, index int) []int {
 }
 
 func (e *Elevator) sortFloorList() {
+	if e.direction == "up" {
+		sort.Slice(e.floorRequestList, func(i, j int) bool { return e.floorRequestList[i] < e.floorRequestList[j] })
+	} else {
+		sort.Slice(e.floorRequestList, func(i, j int) bool { return e.floorRequestList[i] > e.floorRequestList[j] })
+	}
+}
 
+func (e *Elevator) openDoors() {
+	e.door.status = "open"
+	e.door.status = "closed"
 }
 
 // CallButton struct
