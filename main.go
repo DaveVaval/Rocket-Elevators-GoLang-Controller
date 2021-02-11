@@ -98,14 +98,13 @@ func (b *Battery) createBasementFloorRequestButtons(amountOfBasements int) {
 	}
 }
 
-func (b *Battery) findBestColumn(requestedFloor int) Column { // will have to make sure this works
+func (b *Battery) findBestColumn(requestedFloor int) Column {
 	col := Column{}
 	for _, c := range b.columnsList {
 		found := find(requestedFloor, c.servedFloors)
 		if found == true {
 			col = c
 		}
-
 	}
 	return col
 }
@@ -119,10 +118,10 @@ func find(a int, list []int) bool {
 	return false
 }
 
-func (b *Battery) assignElevator(requestedFloor int, direction string) { // need to come back to this 
-	column := b.findBestColumn(requestedFloor)
-	elevator := 
-}
+// func (b *Battery) assignElevator(requestedFloor int, direction string) { // need to come back to this
+// 	column := b.findBestColumn(requestedFloor)
+// 	elevator :=
+// }
 
 // Column struct
 type Column struct {
@@ -184,6 +183,39 @@ func (c *Column) createCallButtons(amountOfFloors int, isBasement bool) {
 	}
 }
 
+func (c *Column) findElevator(requestedFloor int, requestedDirect string) {
+	bestElevatorInfo := map[string]interface{}{
+		"bestElevator": nil,
+		"bestScore":    6,
+		"referenceGap": math.Inf(1),
+	}
+	if requestedFloor == 1 {
+		for _, e := range c.elevatorsList {
+			if 1 == e.currentFloor && e.status == "stopped" {
+				bestElevatorInfo = c.checkElevator(1, e, requestedFloor, bestElevatorInfo)
+			}
+		}
+	}
+}
+
+func (c *Column) checkElevator(baseScore int, elevator []Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
+	score := bestElevatorInfo["bestscore"]
+	bScore := score.(int)
+	if baseScore < bScore {
+		bestElevatorInfo["bestscore"] = baseScore
+		bestElevatorInfo["bestElevatorInfo"] = elevator
+		bestElevatorInfo["referenceGap"] = elevator.currentFloor - floor
+	}
+	return bestElevatorInfo
+}
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
 // Elevator struct
 type Elevator struct {
 	ID               int
@@ -209,8 +241,8 @@ func newElevator(id int, status string, amountOfFloors int, currentFloor int) El
 }
 
 func (e *Elevator) move() {
-	i := 0
-	for i != len(e.floorRequestList) {
+	// i := 0
+	for len(e.floorRequestList) != 0 {
 		destination := e.floorRequestList[0]
 		e.status = "moving"
 		if e.currentFloor < destination {
