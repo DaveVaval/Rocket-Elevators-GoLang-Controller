@@ -183,7 +183,7 @@ func (c *Column) createCallButtons(amountOfFloors int, isBasement bool) {
 	}
 }
 
-func (c *Column) findElevator(requestedFloor int, requestedDirect string) {
+func (c *Column) findElevator(requestedFloor int, requestedDirection string) Elevator {
 	bestElevatorInfo := map[string]interface{}{
 		"bestElevator": nil,
 		"bestScore":    6,
@@ -192,19 +192,44 @@ func (c *Column) findElevator(requestedFloor int, requestedDirect string) {
 	if requestedFloor == 1 {
 		for _, e := range c.elevatorsList {
 			if 1 == e.currentFloor && e.status == "stopped" {
-				bestElevatorInfo = c.checkElevator(1, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = checkElevator(1, e, requestedFloor, bestElevatorInfo)
+			} else if 1 == e.currentFloor && e.status == "idle" {
+				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+			} else if 1 > e.currentFloor && e.direction == "up" {
+				bestElevatorInfo = checkElevator(3, e, requestedFloor, bestElevatorInfo)
+			} else if 1 < e.currentFloor && e.direction == "down" {
+				bestElevatorInfo = checkElevator(3, e, requestedFloor, bestElevatorInfo)
+			} else if e.status == "idle" {
+				bestElevatorInfo = checkElevator(4, e, requestedFloor, bestElevatorInfo)
+			} else {
+				bestElevatorInfo = checkElevator(5, e, requestedFloor, bestElevatorInfo)
+			}
+		}
+	} else {
+		for _, e := range c.elevatorsList {
+			if requestedFloor == e.currentFloor && e.status == "idle" && requestedDirection == e.direction {
+				bestElevatorInfo = checkElevator(1, e, requestedFloor, bestElevatorInfo)
+			} else if requestedFloor > e.currentFloor && e.direction == "up" && requestedDirection == e.direction {
+				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+			} else if requestedFloor < e.currentFloor && e.direction == "down" && requestedDirection == e.direction {
+				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+			} else if e.status == "stopped" {
+				bestElevatorInfo = checkElevator(4, e, requestedFloor, bestElevatorInfo)
+			} else {
+				bestElevatorInfo = checkElevator(5, e, requestedFloor, bestElevatorInfo)
 			}
 		}
 	}
+	return bestElevatorInfo["bestElevator"].(Elevator)
 }
 
-func (c *Column) checkElevator(baseScore int, elevator []Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
+func checkElevator(baseScore int, elevator Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
 	score := bestElevatorInfo["bestscore"]
 	bScore := score.(int)
 	if baseScore < bScore {
 		bestElevatorInfo["bestscore"] = baseScore
-		bestElevatorInfo["bestElevatorInfo"] = elevator
-		bestElevatorInfo["referenceGap"] = elevator.currentFloor - floor
+		bestElevatorInfo["bestElevator"] = elevator
+		bestElevatorInfo["referenceGap"] = Abs(elevator.currentFloor - floor)
 	}
 	return bestElevatorInfo
 }
