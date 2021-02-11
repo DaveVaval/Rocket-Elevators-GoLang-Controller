@@ -181,6 +181,35 @@ func newElevator(id int, status string, amountOfFloors int, currentFloor int) El
 	return e
 }
 
+func (e *Elevator) move() {
+	i := 0
+	for i != len(e.floorRequestList) {
+		destination := e.floorRequestList[0]
+		e.status = "moving"
+		if e.currentFloor < destination {
+			e.direction = "up"
+			for e.currentFloor < destination {
+				e.currentFloor++
+			}
+		} else if e.currentFloor > destination {
+			e.direction = "down"
+			for e.currentFloor > destination {
+				e.currentFloor--
+			}
+		}
+		e.status = "idle"
+		e.floorRequestList = RemoveIndex(e.floorRequestList, 0)
+	}
+}
+
+func RemoveIndex(s []int, index int) []int {
+	return append(s[:index], s[index+1:]...)
+}
+
+func (e *Elevator) sortFloorList() {
+
+}
+
 // CallButton struct
 type CallButton struct {
 	ID        int
