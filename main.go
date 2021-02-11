@@ -118,10 +118,20 @@ func find(a int, list []int) bool {
 	return false
 }
 
-// func (b *Battery) assignElevator(requestedFloor int, direction string) { // need to come back to this
-// 	column := b.findBestColumn(requestedFloor)
-// 	elevator :=
-// }
+func (b *Battery) assignElevator(requestedFloor int, direction string) { // need to come back to this
+	column := b.findBestColumn(requestedFloor)
+	elevator := column.findElevator(1, direction)
+	elevator.floorRequestList = append(elevator.floorRequestList, requestedFloor)
+	elevator.sortFloorList()
+	elevator.move()
+	elevator.openDoors()
+	fmt.Println("............")
+	fmt.Println("Elevator: ", elevator.ID, "from column: ", column.ID, "is sent to lobby")
+	fmt.Println("He enters the elevator")
+	fmt.Println("............")
+	fmt.Println("Elevator reached floor: ", elevator.currentFloor)
+	fmt.Println("He gets out...")
+}
 
 // Column struct
 type Column struct {
@@ -192,38 +202,38 @@ func (c *Column) findElevator(requestedFloor int, requestedDirection string) Ele
 	if requestedFloor == 1 {
 		for _, e := range c.elevatorsList {
 			if 1 == e.currentFloor && e.status == "stopped" {
-				bestElevatorInfo = checkElevator(1, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(1, e, requestedFloor, bestElevatorInfo)
 			} else if 1 == e.currentFloor && e.status == "idle" {
-				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(2, e, requestedFloor, bestElevatorInfo)
 			} else if 1 > e.currentFloor && e.direction == "up" {
-				bestElevatorInfo = checkElevator(3, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(3, e, requestedFloor, bestElevatorInfo)
 			} else if 1 < e.currentFloor && e.direction == "down" {
-				bestElevatorInfo = checkElevator(3, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(3, e, requestedFloor, bestElevatorInfo)
 			} else if e.status == "idle" {
-				bestElevatorInfo = checkElevator(4, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(4, e, requestedFloor, bestElevatorInfo)
 			} else {
-				bestElevatorInfo = checkElevator(5, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(5, e, requestedFloor, bestElevatorInfo)
 			}
 		}
 	} else {
 		for _, e := range c.elevatorsList {
 			if requestedFloor == e.currentFloor && e.status == "idle" && requestedDirection == e.direction {
-				bestElevatorInfo = checkElevator(1, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(1, e, requestedFloor, bestElevatorInfo)
 			} else if requestedFloor > e.currentFloor && e.direction == "up" && requestedDirection == e.direction {
-				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(2, e, requestedFloor, bestElevatorInfo)
 			} else if requestedFloor < e.currentFloor && e.direction == "down" && requestedDirection == e.direction {
-				bestElevatorInfo = checkElevator(2, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(2, e, requestedFloor, bestElevatorInfo)
 			} else if e.status == "stopped" {
-				bestElevatorInfo = checkElevator(4, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(4, e, requestedFloor, bestElevatorInfo)
 			} else {
-				bestElevatorInfo = checkElevator(5, e, requestedFloor, bestElevatorInfo)
+				bestElevatorInfo = c.checkElevator(5, e, requestedFloor, bestElevatorInfo)
 			}
 		}
 	}
 	return bestElevatorInfo["bestElevator"].(Elevator)
 }
 
-func checkElevator(baseScore int, elevator Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
+func (c *Column) checkElevator(baseScore int, elevator Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
 	score := bestElevatorInfo["bestscore"]
 	bScore := score.(int)
 	if baseScore < bScore {
@@ -335,6 +345,33 @@ func main() {
 	// fmt.Println("Test column list: ", goodBat.columnsList)
 	// fmt.Println("Test column: ", testBat.columnsList[0])
 	// Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.newBattery(1, "online", 60, 4, 6, 5)
-	testBat := newBattery(1, "online", 60, 4, 6, 5)
-	fmt.Println(testBat)
+	battery := newBattery(1, "online", 60, 4, 6, 5)
+
+	fmt.Println(battery.status)
+
+	// // B1
+	// battery.columnsList[1].elevatorsList[0].currentfloor = 20
+	// battery.columnsList[1].elevatorsList[0].direction = "down"
+	// battery.columnsList[1].elevatorsList[0].floorRequestList.Add(5)
+
+	// // B2
+	// battery.columnsList[1].elevatorsList[1].currentfloor = 3
+	// battery.columnsList[1].elevatorsList[1].direction = "up"
+	// battery.columnsList[1].elevatorsList[1].floorRequestList.Add(15)
+
+	// // B3
+	// battery.columnsList[1].elevatorsList[2].currentfloor = 13
+	// battery.columnsList[1].elevatorsList[2].direction = "down"
+	// battery.columnsList[1].elevatorsList[2].floorRequestList.Add(1)
+
+	// // B4
+	// battery.columnsList[1].elevatorsList[3].currentfloor = 15
+	// battery.columnsList[1].elevatorsList[3].direction = "down"
+	// battery.columnsList[1].elevatorsList[3].floorRequestList.Add(2)
+
+	// // B5
+	// battery.columnsList[1].elevatorsList[4].currentfloor = 6
+	// battery.columnsList[1].elevatorsList[4].direction = "down"
+	// battery.columnsList[1].elevatorsList[4].floorRequestList.Add(1)
+	// battery.columnsList[1].elevatorsList[4].move()
 }
