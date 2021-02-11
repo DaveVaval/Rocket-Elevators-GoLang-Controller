@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 // Battery struct
@@ -24,18 +25,20 @@ func batteryInit(id int, status string, amountOfFloors int, amountOfColumns int,
 	b.amountOfBasements = amountOfBasements
 	b.columnsList = []Column{}
 	b.floorRequestButtonsList = []FloorRequestButton{}
+	// columnID := 1
 
 	if amountOfBasements > 0 {
 		b.createBasmentColumn(b.amountOfBasements, amountOfElevatorPerColumn)
+		amountOfColumns--
 	}
-
+	b.createColumns(amountOfColumns, amountOfFloors, amountOfBasements, amountOfElevatorPerColumn)
 	// for debug
-	for column := range b.columnsList {
-		fmt.Println("Column: ", column)
-		for _, floor := range b.columnsList[0].servedFloors {
-			fmt.Println("	Floor: ", floor)
-		}
-	}
+	// for column := range b.columnsList {
+	// 	fmt.Println("Column: ", column)
+	// 	for _, floor := range b.columnsList[0].servedFloors {
+	// 		fmt.Println("	Floor: ", floor)
+	// 	}
+	// }
 
 	return b
 }
@@ -54,6 +57,25 @@ func (b *Battery) createBasmentColumn(amountOfBasements int, amountOfElevatorPer
 
 }
 
+func (b *Battery) createColumns(amountOfColumns int, amountOfFloors int, amountOfBasements int, amountOfElevatorPerColumn int) {
+	amountOfFloorsPerColumn := math.Ceil(float64(amountOfFloors / amountOfColumns))
+	n := int(amountOfFloorsPerColumn)
+	floor := 1
+	columnID := 2
+
+	for i := 0; i < amountOfColumns; i++ {
+		servedFloors := []int{}
+		for j := 0; j < n; j++ {
+			if floor <= amountOfFloors {
+				servedFloors = append(servedFloors, floor)
+				floor++
+			}
+		}
+		b.columnsList = append(b.columnsList, Column{columnID, "online", amountOfBasements, amountOfElevatorPerColumn, false, []Elevator{}, []CallButton{}, servedFloors})
+		columnID++
+	}
+}
+
 // Column struct
 type Column struct {
 	ID                int
@@ -66,7 +88,8 @@ type Column struct {
 	servedFloors      []int
 }
 
-func (c Column) columnInit(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) *Column {
+func columnInit(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) Column {
+	c := Column{}
 	c.ID = id
 	c.status = status
 	c.amountOfFloors = amountOfFloors
@@ -80,16 +103,7 @@ func (c Column) columnInit(id int, status string, amountOfFloors int, amountOfEl
 		fmt.Println("Floor: ", floor)
 	}
 
-	return &Column{
-		ID:                id,
-		status:            status,
-		amountOfFloors:    amountOfFloors,
-		amountOfElevators: amountOfElevators,
-		isBasement:        isBasement,
-		elevatorsList:     []Elevator{},
-		callButtonsList:   []CallButton{},
-		servedFloors:      c.servedFloors,
-	}
+	return c
 }
 
 // Elevator struct
@@ -136,5 +150,5 @@ func main() {
 	// fmt.Println("Test column: ", testBat.columnsList[0])
 	// Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.batteryInit(1, "online", 60, 4, 6, 5)
 	testBat := batteryInit(1, "online", 60, 4, 6, 5)
-	fmt.Println(testBat)
+	// fmt.Println(testBat)
 }
