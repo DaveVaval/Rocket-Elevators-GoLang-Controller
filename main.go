@@ -19,7 +19,7 @@ type Battery struct {
 	floorRequestButtonsList []FloorRequestButton
 }
 
-func batteryInit(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) Battery {
+func newBattery(id int, status string, amountOfFloors int, amountOfColumns int, amountOfBasements int, amountOfElevatorPerColumn int) Battery {
 	b := Battery{}
 	b.ID = id
 	b.status = status
@@ -28,14 +28,13 @@ func batteryInit(id int, status string, amountOfFloors int, amountOfColumns int,
 	b.amountOfBasements = amountOfBasements
 	b.columnsList = []Column{}
 	b.floorRequestButtonsList = []FloorRequestButton{}
-	// columnID := 1
 
 	if amountOfBasements > 0 {
 		b.createBasmentColumn(b.amountOfBasements, amountOfElevatorPerColumn)
 		amountOfColumns--
 	}
 	b.createFloorRequestButtons(amountOfFloors)
-	b.createColumns(amountOfColumns, amountOfFloors, amountOfBasements, amountOfElevatorPerColumn)
+	b.createColumns(amountOfColumns, amountOfFloors, amountOfElevatorPerColumn)
 	// for debug
 	// for column := range b.columnsList {
 	// 	fmt.Println("Column: ", column)
@@ -55,12 +54,13 @@ func (b *Battery) createBasmentColumn(amountOfBasements int, amountOfElevatorPer
 		servedFloors = append(servedFloors, floor)
 		floor--
 	}
-	b.columnsList = append(b.columnsList, Column{columnID, "online", amountOfBasements, amountOfElevatorPerColumn, true, []Elevator{}, []CallButton{}, servedFloors})
+	column := newColumn(columnID, "online", amountOfBasements, amountOfElevatorPerColumn, true, servedFloors)
+	b.columnsList = append(b.columnsList, column)
 	columnID++
 
 }
 
-func (b *Battery) createColumns(amountOfColumns int, amountOfFloors int, amountOfBasements int, amountOfElevatorPerColumn int) {
+func (b *Battery) createColumns(amountOfColumns int, amountOfFloors int, amountOfElevatorPerColumn int) {
 	amountOfFloorsPerColumn := math.Ceil(float64(amountOfFloors / amountOfColumns))
 	n := int(amountOfFloorsPerColumn)
 	floor := 1
@@ -73,7 +73,8 @@ func (b *Battery) createColumns(amountOfColumns int, amountOfFloors int, amountO
 				floor++
 			}
 		}
-		b.columnsList = append(b.columnsList, Column{columnID, "online", amountOfBasements, amountOfElevatorPerColumn, false, []Elevator{}, []CallButton{}, servedFloors})
+		column := newColumn(columnID, "online", amountOfFloors, amountOfElevatorPerColumn, false, servedFloors)
+		b.columnsList = append(b.columnsList, column)
 		columnID++
 	}
 }
@@ -108,7 +109,7 @@ type Column struct {
 	servedFloors      []int
 }
 
-func columnInit(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) Column {
+func newColumn(id int, status string, amountOfFloors int, amountOfElevators int, isBasement bool, servedFloors []int) Column {
 	c := Column{}
 	c.ID = id
 	c.status = status
@@ -118,6 +119,8 @@ func columnInit(id int, status string, amountOfFloors int, amountOfElevators int
 	c.servedFloors = servedFloors
 	c.elevatorsList = []Elevator{}
 	c.callButtonsList = []CallButton{}
+	c.createElevators(amountOfFloors, amountOfElevators)
+	c.createCallButtons(amountOfFloors, isBasement)
 
 	// for floor := range c.servedFloors {
 	// 	fmt.Println("Floor: ", floor)
@@ -127,9 +130,30 @@ func columnInit(id int, status string, amountOfFloors int, amountOfElevators int
 }
 
 func (c *Column) createElevators(amountOfFloors int, amountOfElevators int) {
-	// elevatorID := 1
+	elevatorID := 1
 	for i := 0; i < amountOfElevators; i++ {
-		// c.elevatorsList = append(c.elevatorsList, Elevator{elevatorID, "idle", amountOfFloors, "null", 1, })
+		elevator := newElevator(elevatorID, "idle", amountOfFloors, 1)
+		c.elevatorsList = append(c.elevatorsList, elevator)
+		elevatorID++
+	}
+}
+
+func (c *Column) createCallButtons(amountOfFloors int, isBasement bool) {
+	callButtonID := 1
+	if isBasement == true {
+		buttonFloor := -1
+		for i := 0; i < amountOfFloors; i++ {
+			c.callButtonsList = append(c.callButtonsList, CallButton{callButtonID, "off", buttonFloor, "up"})
+			buttonFloor--
+			callButtonID++
+		}
+	} else {
+		buttonFloor := 1
+		for i := 0; i < amountOfFloors; i++ {
+			c.callButtonsList = append(c.callButtonsList, CallButton{callButtonID, "off", buttonFloor, "down"})
+			buttonFloor++
+			callButtonID++
+		}
 	}
 }
 
@@ -142,6 +166,19 @@ type Elevator struct {
 	currentFloor     int
 	door             Door
 	floorRequestList []int
+}
+
+func newElevator(id int, status string, amountOfFloors int, currentFloor int) Elevator {
+	e := Elevator{}
+	e.ID = id
+	e.status = status
+	e.amountOfFloors = amountOfFloors
+	e.direction = "null"
+	e.currentFloor = currentFloor
+	e.door = Door{id, "closed"}
+	e.floorRequestList = []int{}
+
+	return e
 }
 
 // CallButton struct
@@ -168,14 +205,14 @@ type Door struct {
 func main() {
 	fmt.Println("-------------------------------// TESTING //----------------------------------")
 	// testBat := Battery{1, "online", 66, 4, 6, []Column{}, []FloorRequestButton{}}
-	// goodBat := testBat.batteryInit(1, "online", 60, 4, 6, 5)
+	// goodBat := testBat.newBattery(1, "online", 60, 4, 6, 5)
 	// // testCol := Column{1, "online", 66, 5, true}
 
 	// fmt.Println("Test status: ", goodBat.status)
 	// fmt.Println("Test id: ", goodBat.ID)
 	// fmt.Println("Test column list: ", goodBat.columnsList)
 	// fmt.Println("Test column: ", testBat.columnsList[0])
-	// Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.batteryInit(1, "online", 60, 4, 6, 5)
-	testBat := batteryInit(1, "online", 60, 4, 6, 5)
-	// fmt.Println(testBat)
+	// Battery{1, "online", 60, 4, 6, []Column{}, []FloorRequestButton{}}.newBattery(1, "online", 60, 4, 6, 5)
+	testBat := newBattery(1, "online", 60, 4, 6, 5)
+	fmt.Println(testBat)
 }
