@@ -236,9 +236,7 @@ func (c *Column) findBestElevator(requestedFloor int, requestedDirection string)
 }
 
 func (c *Column) checkElevator(baseScore int, elevator Elevator, floor int, bestElevatorInfo map[string]interface{}) map[string]interface{} {
-	score := bestElevatorInfo["bestScore"]
-	bScore := score.(int)
-	if baseScore < bScore {
+	if baseScore < bestElevatorInfo["bestScore"].(int) {
 		bestElevatorInfo["bestScore"] = baseScore
 		bestElevatorInfo["bestElevator"] = elevator
 		bestElevatorInfo["referenceGap"] = Abs(elevator.currentFloor - floor)
